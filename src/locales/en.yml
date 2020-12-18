@@ -1,0 +1,10 @@
+en:
+  login-page:
+    title: "Login into your account"
+    subtitle: "Don't have an account yet?"
+    placeholder: "Put your %{type} here"
+    create-new: "Create new"
+    show: "Show"
+    hide: "Hide"
+    login: "Login"
+    login-with-google: "Login With Google"

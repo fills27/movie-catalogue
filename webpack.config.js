@@ -42,6 +42,9 @@ module.exports = {
     disableHostCheck: true
   },
   resolve: {
+    fallback: {
+      fs: false
+    },
     extensions: ['.js'],
     alias: {
       'api': path.resolve(__dirname, './src/api'),
@@ -52,10 +55,7 @@ module.exports = {
       'images': path.resolve(__dirname, './src/assets/images'),
       'components': path.resolve(__dirname, './src/components'),
       'styles': path.resolve(__dirname, './src/assets/stylesheets')
-    }
-  },
-  node: {
-    fs: 'empty'
+    },
   },
   module: {
     rules: [
@@ -66,7 +66,7 @@ module.exports = {
         }
       },
       {
-        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.woff$/, /\.woff2$/, /\.eot$/, /\.ttf$/],
+        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.woff$/, /\.woff2$/, /\.eot$/, /\.ttf$/,  /\.svg$/],
         use: [{
           loader: 'url-loader',
           options: {

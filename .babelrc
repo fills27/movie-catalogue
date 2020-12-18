@@ -1,7 +1,7 @@
 {
-  "presets": ["env", "es2015", "stage-0", "react"],
+  "presets": ["@babel/preset-env", "@babel/preset-react"],
   "plugins": [
-    "transform-decorators-legacy",
+    "@babel/plugin-proposal-class-properties",
     ["babel-plugin-dotenv", {
       "replacedModuleName": "babel-dotenv"
     }]
