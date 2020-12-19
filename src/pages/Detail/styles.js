@@ -11,7 +11,7 @@ const bgDetail = (url) => {
 }
 
 const bgDetailOverlay = css`
-  padding-top: 50px;
+  padding-top: 75px;
   padding-bottom: 75px;
   background: linear-gradient(to right, rgba(2, 37, 64, 1.00) 250px, rgba(2, 37, 64, 0.64) 100%);
 `
