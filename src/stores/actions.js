@@ -1,5 +1,6 @@
-import { ApiMovies, ApiSearch } from 'api'
+import { ApiMovies, ApiSearch, ApiTv } from 'api'
 import { types } from 'stores'
+import {Helpers} from 'utils'
 
 const getData = () => {
   return async(dispatch) => {
@@ -102,16 +103,72 @@ const getDataSearchPage = (query, params) => {
   return async(dispatch) => {
     let searchResults = []
     let status = ''
+
+    const persons = params.persons
+    const years = params.years
+
     try {
       const getDataSearch = await ApiSearch.multi(query, params.page)
-      searchResults = getDataSearch.data.results
       const newArr = Array.from({ length: getDataSearch.data.total_pages }, (_, i) => i)
       const getAllData = await Promise.all(newArr.map(async(item) => {
         const dataSearch = await ApiSearch.multi(query, item + 1)
         const allData = []
-        return allData.concat(dataSearch.data.results)
+        return await Promise.all(allData.concat(dataSearch.data.results).map(async(yolo) => {
+          let credits = {}
+          if(yolo.media_type === 'movie'){
+            const getDataDetail = await ApiMovies.detail(yolo.id)
+            credits = getDataDetail.data.credits
+            return {...yolo, credits}
+          }else if(yolo.media_type === 'tv'){
+            const getDataDetail = await ApiTv.detail(yolo.id)
+            credits = getDataDetail.data.credits
+            return {...yolo, credits}
+          }else{
+            return {...yolo, credits}
+          }
+        }))
       }))
-      const combineAllData = [].concat.apply([], getAllData)
+
+      const set = new Set()
+      const mergeAll = [].concat.apply([], getAllData)
+      const dataArr = mergeAll.filter((item) => {
+        const duplicateId = set.has(item.id)
+        set.add(item.id)
+        return !duplicateId
+      })
+
+      let allData = []
+
+      if(persons.length > 0 && years.length > 0){
+        allData = dataArr.filter(any => Object.keys(any.credits).length > 0).filter(any => {
+          return any.credits.cast.filter(yolo => 
+            persons.filter(item => yolo.name.toLowerCase().includes(item.toLowerCase())).length > 0
+          ).length > 0
+        }).filter(any => Object.keys(any.credits).length > 0).filter(any => {
+          if(any.media_type === 'movie' && any.release_date !== null && any.release_date !== '' && typeof any.release_date !== 'undefined'){
+            return years.filter(item => any.release_date.toLowerCase().includes(item)).length > 0
+          }else if(any.media_type === 'tv' && any.first_air_date !== null && any.first_air_date !== '' && typeof any.first_air_date !== 'undefined'){
+            return years.filter(item => any.first_air_date.toLowerCase().includes(item)).length > 0
+          }
+        })
+      }else if(persons.length > 0){
+        allData = dataArr.filter(any => Object.keys(any.credits).length > 0).filter(any => {
+          return any.credits.cast.filter(yolo => 
+            persons.filter(item => yolo.name.toLowerCase().includes(item.toLowerCase())).length > 0
+          ).length > 0
+        })
+      }else if(years.length > 0){
+        allData = dataArr.filter(any => Object.keys(any.credits).length > 0).filter(any => {
+          if(any.media_type === 'movie' && any.release_date !== null && any.release_date !== '' && typeof any.release_date !== 'undefined'){
+            return years.filter(item => any.release_date.toLowerCase().includes(item)).length > 0
+          }else if(any.media_type === 'tv' && any.first_air_date !== null && any.first_air_date !== '' && typeof any.first_air_date !== 'undefined'){
+            return years.filter(item => any.first_air_date.toLowerCase().includes(item)).length > 0
+          }
+        })
+      }else{
+        allData = dataArr
+      }
+      searchResults = Helpers.groupArrWithRange(allData, 20)
       status = 'success'
     } catch(e){
       status = 'error'
@@ -121,7 +178,7 @@ const getDataSearchPage = (query, params) => {
     if(status === 'success'){
       return  dispatch({type: 
         types.LOAD_DATA_MOVIE_SEARCH_SUCCESS, 
-        state: {searchResults}
+        state: {searchResults, page: params.page, actorFilter: persons, yearFilter: years, totalPage: searchResults.length}
       })
     }
 
@@ -129,11 +186,38 @@ const getDataSearchPage = (query, params) => {
   }
 }
 
+const getDataPerson = (query) => {
+  return async(dispatch) => {
+    let actorFilterOptions = []
+    let status = ''
+    try {
+      const getDataSearch = await ApiSearch.person(query, 1)
+      actorFilterOptions = getDataSearch.data.results
+      status = 'success'
+    } catch(e) {
+      status = 'error'
+      console.log(e)
+    }
+
+    if(status === 'success'){
+      return  dispatch({type: 
+        types.LOAD_DATA_PERSON_SEARCH_SUCCESS, 
+        state: {
+          actorFilterOptions
+        }
+      })
+    }
+
+    return dispatch({type: types.LOAD_DATA_PERSON_SEARCH_FAILED, state: {error: status}})
+  }
+}
+
 const actions = {
   getData,
   getDataDetail,
   getDataSearchNavbar,
-  getDataSearchPage
+  getDataSearchPage,
+  getDataPerson
 }
 
 export default actions

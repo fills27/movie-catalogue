@@ -5,7 +5,7 @@ const bgDetail = (url) => {
     background-size: cover;
     background-repeat: no-repeat;
     background-image: url(${url});
-    background-position: right -200px top;
+    background-position: right -250px top;
     width: 100%;
   `
 }
@@ -13,7 +13,7 @@ const bgDetail = (url) => {
 const bgDetailOverlay = css`
   padding-top: 50px;
   padding-bottom: 75px;
-  background: linear-gradient(to right, rgba(2, 37, 64, 1.00) 100px, rgba(2, 37, 64, 0.64) 100%);
+  background: linear-gradient(to right, rgba(2, 37, 64, 1.00) 250px, rgba(2, 37, 64, 0.64) 100%);
 `
 
 const wrapperImage = css`
@@ -78,11 +78,12 @@ const creator = css`
   margin-top: 30px;
   > div{
     margin-right: 20px;
+    margin-bottom: 15px;
   }
   b{
     color: #fff;
     display: inline-block;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
   span{
     color: rgba(255, 255, 255, 0.4);

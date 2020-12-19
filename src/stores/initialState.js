@@ -1,4 +1,5 @@
-import { Search } from "../pages"
+import {Helpers} from 'utils'
+const currentYear = (new Date()).getFullYear()
 
 const initialState = {
   home: {
@@ -24,6 +25,10 @@ const initialState = {
     searchResults: [],
     actorFilter: [],
     yearFilter: [],
+    totalPage : 0,
+    actorFilterOptions: [],
+    yearFilterOptions: Helpers.rangeYear(currentYear, currentYear - 120, -1),
+    page: 1,
     error: '',
     loading: true,
   }

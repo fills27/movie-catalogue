@@ -21,13 +21,13 @@ const Detail = () => {
     useEffect(() => {
       dispatch(actions.getDataDetail(id, null))
       /* this to reset results */
-      dispatch({type: types.RESET_DATA_MOVIE_SEARCH, state: {results: []}})
+      dispatch({type: types.RESET_DATA_MOVIE_SEARCH_NAVBAR, state: {results: []}})
     }, [id])
   } else {
     useEffect(() => {
       dispatch(actions.getDataDetail(id, state.movieDetailOpened.find(any => any.id.toString() === id)))
       /* this to reset results */
-      dispatch({type: types.RESET_DATA_MOVIE_SEARCH, state: {results: []}})
+      dispatch({type: types.RESET_DATA_MOVIE_SEARCH_NAVBAR, state: {results: []}})
     }, [id])
   }
   

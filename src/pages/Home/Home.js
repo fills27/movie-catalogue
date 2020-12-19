@@ -4,7 +4,7 @@ import {useSelector} from 'react-redux'
 import {Container, Input} from 'components'
 import {Link, useLocation} from 'react-router-dom'
 import {Helpers, Base} from 'utils'
-import {IMAGE_URL, POTRAIT, LANDSCAPE_IMAGE} from 'babel-dotenv'
+import {IMAGE_URL, POTRAIT, LANDSCAPE_IMAGE, LANDSCAPE_IMAGE_BIG} from 'babel-dotenv'
 import Slider from 'react-slick'
 import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
@@ -20,16 +20,37 @@ const Home = () => {
     {label: "topRated", title: 'Top Rated'},
   ]
 
-  /* this is reset state when back to index */
-  // const location = useLocation()
-  // if(typeof location.state !== "undefined" && location.state.reset){
-  //   useEffect(() => {
-
-  //   }, [location])
-  // }
+  console.log(state)
 
   return (
     <Container>
+      {state.topRated.length > 0 &&
+        <div className={Styles.hero(          
+          IMAGE_URL + LANDSCAPE_IMAGE_BIG + state.topRated[state.topRated.length - 1].backdrop_path
+        )}>
+          <div className={Styles.overlayhero}>
+            <div className={Base.container}>
+              <span className={Styles.rating}>
+                <i className="la la-star" style={{marginRight: '3px'}}></i>
+                {state.topRated[state.topRated.length - 1].vote_average}
+              </span>
+              <h1>
+                {state.topRated[state.topRated.length - 1].original_title}
+                ({state.topRated[state.topRated.length - 1].release_date.split('-')[0]})
+              </h1>
+              <b>
+                Overview
+              </b>
+              <span className={Styles.overview}>
+                {state.topRated[state.topRated.length - 1].overview}
+              </span>
+              <Link to={`/movie/${state.topRated[state.topRated.length - 1].id}`}>
+                More detail
+              </Link>
+            </div>
+          </div>
+        </div>
+      }
       <div className={Base.container}>
       {
         dataMovie.map(item =>{

@@ -47,8 +47,16 @@ const searchReducer = (state = initialState.search, action) => {
     case types.LOAD_DATA_MOVIE_SEARCH_SUCCESS:
       return {...state, ...action.state, loading: false}
     case types.RESET_DATA_MOVIE_SEARCH:
-      return {...state, ...action.state}
+      return {...state, ...action.state, loading: false}
     case types.LOAD_DATA_MOVIE_SEARCH_FAILED:
+      return {...state, ...action.state, loading: false}
+    case types.LOAD_DATA_PERSON_SEARCH_SUCCESS:
+      return {...state, ...action.state, loading: false}
+    case types.LOAD_DATA_PERSON_SEARCH_FAILED:
+      return {...state, ...action.state, loading: false}
+    case types.RESET_DATA_PERSON_SEARCH:
+      return {...state, ...action.state, loading: false}
+    case types.CHANGE_PAGE_TO:
       return {...state, ...action.state, loading: false}
     default: 
       return state

@@ -28,13 +28,15 @@ const Navbar = ({darkMode, active}) => {
     setValue(value)
   }
 
-  useEffect(() => {
-    document.getElementById('search-input').addEventListener('keyup', handleInput)
-
-    return () => {
-      document.getElementById('search-input').removeEventListener('keyup', handleInput)
-    }
-  }, [handleInput])
+  if(!location.pathname.includes('search')){
+    useEffect(() => {
+       document.getElementById('search-input').addEventListener('keyup', handleInput)
+  
+      return () => {
+        document.getElementById('search-input').removeEventListener('keyup', handleInput)
+      }
+    }, [handleInput])
+  }
 
   const results = state.results.reduce((groups, item) => {
     const media = item.media_type
@@ -66,93 +68,96 @@ const Navbar = ({darkMode, active}) => {
         <div>
         </div>
         <div>
-          <div style={{position: 'relative'}} className={Helpers.mergeCss(Base.dInlineFlex, Base.alignItemsCenter)}>
-            <Input 
-              id={'search-input'}
-              value={value}
-              onChange={handleInput}
-              className={Styles.customInput(Object.keys(results))}
-              placeholder="Search Movies"/>
-              {Object.keys(results).length > 0 &&
-                <div className={Styles.resultsSearch}>
-                  {
-                    Object.keys(results).map(any => {
-                      return(
-                        <div key={any}>
-                          {results[any].filter(item => any !== 'person' ? (item.poster_path !== null) : (item.profile_path !== null)).length > 0 &&                          
-                            <h4>
-                              {any !== 'person' ? any : 'Actor/Actress'}
-                            </h4>
-                          }
-                          {
-                            results[any].filter(item => any !== 'person' ? (item.poster_path !== null) : (item.profile_path !== null)).map(item => {
-                              const bgPath = any !== 'person' ? item.poster_path : item.profile_path
-                              const path = any !== 'person' ? LANDSCAPE_IMAGE : POTRAIT
-                              const content = (
-                                <>
-                                <div className={Styles.parentItem(any)}>
-                                  <div>
-                                    <img className={Base.imgFluid} src={IMAGE_URL + path + bgPath}/>
+          {
+            !location.pathname.includes('search') &&
+            <div style={{position: 'relative'}} className={Helpers.mergeCss(Base.dInlineFlex, Base.alignItemsCenter)}>
+              <Input 
+                id={'search-input'}
+                value={value}
+                onChange={handleInput}
+                className={Styles.customInput(Object.keys(results).length > 0)}
+                placeholder="Search Movies"/>
+                {Object.keys(results).length > 0 &&
+                  <div className={Styles.resultsSearch}>
+                    {
+                      Object.keys(results).map(any => {
+                        return(
+                          <div key={any}>
+                            {results[any].filter(item => any !== 'person' ? (item.poster_path !== null) : (item.profile_path !== null)).length > 0 &&                          
+                              <h4>
+                                {any !== 'person' ? any : 'Actor/Actress'}
+                              </h4>
+                            }
+                            {
+                              results[any].filter(item => any !== 'person' ? (item.poster_path !== null) : (item.profile_path !== null)).map(item => {
+                                const bgPath = any !== 'person' ? item.poster_path : item.profile_path
+                                const path = any !== 'person' ? LANDSCAPE_IMAGE : POTRAIT
+                                const content = (
+                                  <>
+                                  <div className={Styles.parentItem(any)}>
+                                    <div>
+                                      <img className={Base.imgFluid} src={IMAGE_URL + path + bgPath}/>
+                                    </div>
                                   </div>
-                                </div>
-                                <div className={Styles.wrapper}>
-                                  <span className={Base.dBlock}>
-                                    {any === 'movie' ? item.original_title : item.name}
-                                  </span>
-                                  {any === 'person' ? 
-                                  <span>
-                                    {item.known_for.filter(yolo => yolo.original_title).map(yolo => {
-                                      return yolo.original_title
-                                      }).join(', ')
-                                    }
-                                  </span> 
-                                  :
-                                  <span>
-                                    {
-                                      any === 'tv' ? typeof item.first_air_date !== 'undefined' &&
-                                      <b>
-                                        ({item.first_air_date.split('-')[0]})
-                                      </b>
-                                      :
-                                      typeof item.release_date !== 'undefined' &&
-                                      <b>
-                                        ({item.release_date.split('-')[0]})
-                                      </b>
-                                    }
-                                    {item.vote_average !== 0 &&
-                                      <>
-                                        <b style={{marginLeft: '3px', marginRight: '3px'}}>
-                                          &bull;
+                                  <div className={Styles.wrapper}>
+                                    <span className={Base.dBlock}>
+                                      {any === 'movie' ? item.original_title : item.name}
+                                    </span>
+                                    {any === 'person' ? 
+                                    <span>
+                                      {item.known_for.filter(yolo => yolo.original_title).map(yolo => {
+                                        return yolo.original_title
+                                        }).join(', ')
+                                      }
+                                    </span> 
+                                    :
+                                    <span>
+                                      {
+                                        any === 'tv' ? typeof item.first_air_date !== 'undefined' &&
+                                        <b>
+                                          ({item.first_air_date.split('-')[0]})
                                         </b>
-                                        <b className={Helpers.mergeCss(Base.dInlineFlex, Base.alignItemsCenter)}>
-                                          <i style={{marginRight: '3px'}} className="la la-star"></i>
-                                          {item.vote_average}
+                                        :
+                                        typeof item.release_date !== 'undefined' &&
+                                        <b>
+                                          ({item.release_date.split('-')[0]})
                                         </b>
-                                      </>
+                                      }
+                                      {item.vote_average !== 0 &&
+                                        <>
+                                          <b style={{marginLeft: '3px', marginRight: '3px'}}>
+                                            &bull;
+                                          </b>
+                                          <b className={Helpers.mergeCss(Base.dInlineFlex, Base.alignItemsCenter)}>
+                                            <i style={{marginRight: '3px'}} className="la la-star"></i>
+                                            {item.vote_average}
+                                          </b>
+                                        </>
+                                      }
+                                    </span>
                                     }
-                                  </span>
-                                  }
+                                  </div>
+                                  </>
+                                )
+                                
+                                return any === 'movie' ?
+                                <Link to={{pathname:`/movie/${item.id}`, state:{resetSearch: true}}} key={item.id} className={Styles.itemResult}>
+                                  {content}
+                                </Link>
+                                :
+                                <div key={item.id} className={Styles.itemResult}>
+                                  {content}
                                 </div>
-                                </>
-                              )
-                              
-                              return any === 'movie' ?
-                              <Link to={{pathname:`/movie/${item.id}`, state:{resetSearch: true}}} key={item.id} className={Styles.itemResult}>
-                                {content}
-                              </Link>
-                              :
-                              <div key={item.id} className={Styles.itemResult}>
-                                {content}
-                              </div>
-                            }).slice(0, 3)
-                          }
-                        </div>
-                      )
-                    })
-                  }
-                </div>
-              }
-          </div>
+                              }).slice(0, 3)
+                            }
+                          </div>
+                        )
+                      })
+                    }
+                  </div>
+                }
+            </div>
+          }
         </div>
       </div>
     </nav>

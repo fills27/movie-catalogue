@@ -4,7 +4,7 @@ import {Container, Input} from 'components'
 import {Link, useLocation, useParams, useHistory} from 'react-router-dom'
 import {Helpers, Base} from 'utils'
 import { useDebounce } from 'use-debounce'
-import {actions} from 'stores'
+import {actions, types} from 'stores'
 import {IMAGE_URL, POTRAIT, LANDSCAPE_IMAGE} from 'babel-dotenv'
 import Styles from './styles'
 
@@ -23,38 +23,98 @@ const Search = () => {
   const page = query.get('page')
   const persons = query.get('persons')
   const years = query.get('years')
-  
-  useEffect(() => {
-    if(Helpers.checkValueNotBlank(newTerm)){
-      dispatch(actions.getDataSearchPage(newTerm, {page, persons, years}))
-      if(persons !== null){
-        history.push(`/search/${newTerm}?page=${page}&persons=${persons}`)
-      }else if(years !== null){
-        history.push(`/search/${newTerm}?page=${page}&years=${years}`)
-      }else if(page !== null && persons !== null){
-        history.push(`/search/${newTerm}?page=${page}&persons=${persons}&years=${years}`)
-      }else{
-        history.push(`/search/${newTerm}?page=${page}`)
-      }
+
+  const newPersons = persons === null ? [] : persons.split(',')
+  const newYears = years === null ? [] : years.split(',')
+
+  const handleInput = (e) => {
+    const {value} = e.target
+    if(Helpers.checkValueNotBlank(value)){
+      dispatch(actions.getDataPerson(value))
     }else{
-      // dispatch({type: types.RESET_DATA_MOVIE_SEARCH, state: {results: []}})
+      dispatch({type: types.RESET_DATA_PERSON_SEARCH, state: {actorFilterOptions: []}})
     }
     
+    setPeople(value)
+  }
+
+  useEffect(() => {
+    if(Helpers.checkValueNotBlank(newTerm)){
+      pushUrl(actions.getDataSearchPage(newTerm, {page, persons: newPersons, years: newYears}), {page, persons, years})
+    }else{
+      dispatch({type: types.RESET_DATA_MOVIE_SEARCH, state: {searchResults: [], totalPage: 0}})
+    }
+
+    document.getElementById('search-input-people').addEventListener('keyup', handleInput)
+
+    return () => {
+      document.getElementById('search-input-people').removeEventListener('keyup', handleInput)
+    }
   }, [newTerm])
   
-  const searchResults = state.searchResults.reduce((groups, item) => {
-    const media = item.media_type
-    if (!groups[media]) {
-      groups[media] = []
+  const searchResults = typeof state.searchResults[state.page - 1] !== 'undefined' ? 
+    state.searchResults[state.page - 1].reduce((groups, item) => {
+      const media = item.media_type
+      if (!groups[media]) {
+        groups[media] = []
+      }
+      groups[media].push(item)
+      return groups
+    }, {}) : []
+
+  const clearFilter = (value, type) => () => {
+    const typeDataArr = type === 'persons' ? newPersons.filter(any => any !== value) : 
+    newYears.filter(any => any !== value)
+    const typeDataStr = typeDataArr.map(any => any).join(',') === '' ? null : typeDataArr.map(any => any).join(',')
+    const typeAction = type === 'persons' ? {page, persons: typeDataArr, years: newYears} : 
+      {page, persons: newPersons, years: typeDataArr}
+    const params = type === 'persons' ? {page, persons: typeDataStr, years} : {page, persons, years: typeDataStr}
+    pushUrl(actions.getDataSearchPage(newTerm, typeAction), params)
+  }
+
+  const addFilter = (value, type) => () => {
+    const typeDataArr = type === 'persons' ? 
+    newPersons.filter(any => any === value.toString().toLowerCase()).length > 0 ? newPersons : newPersons.concat(value.toString().toLowerCase()) : 
+    newYears.filter(any => any === value.toString().toLowerCase()).length > 0 ? newYears :  newYears.concat(value.toString().toLowerCase())
+    const typeDataStr = typeDataArr.map(any => any).join(',') === '' ? null : typeDataArr.map(any => any).join(',')
+    debugger
+    const typeAction = type === 'persons' ? {page, persons: typeDataArr, years: newYears} : 
+      {page, persons: newPersons, years: typeDataArr}
+    const params = type === 'persons' ? {page, persons: typeDataStr, years} : {page, persons, years: typeDataStr}
+    pushUrl(actions.getDataSearchPage(newTerm, typeAction), params)
+    dispatch({type: types.RESET_DATA_PERSON_SEARCH, state: {actorFilterOptions: []}})
+
+    if(type === 'persons'){
+      setPeople('')
+    }else{
+      setYear('')
     }
-    groups[media].push(item)
-    return groups
-  }, {})
+  }
+  
+  const pushUrl = (newActions, params) => {
+
+    dispatch(newActions)
+
+    if(params.persons !== null && params.years !== null){
+      history.push(`/search/${term}?page=${params.page}&persons=${params.persons}&years=${params.years}`)
+    }else if(params.years !== null){
+      history.push(`/search/${term}?page=${params.page}&years=${params.years}`)
+    }else if(params.persons !== null){
+      history.push(`/search/${term}?page=${params.page}&persons=${params.persons}`)
+    }else{
+      history.push(`/search/${term}?page=${params.page}`)
+    }
+  }
+
+  const changePageTo = (thepage) => () => {
+    pushUrl({type: types.CHANGE_PAGE_TO, state: {page: thepage.toString()}}, {page: thepage, persons, years})
+  }
 
   // console.log(newTerm)
-
-  console.log(state)
+  const pagination = Array.from({ length: state.totalPage }, (_, i) => i)
   
+  console.log(state)
+
   return(
     <Container>
       <div className={Helpers.mergeCss(Base.container, Base.marginTop5)}>
@@ -66,7 +126,7 @@ const Search = () => {
           </div>
         </div>
         <div className={Helpers.mergeCss(Base.row, Base.marginTop3, Styles.form)}>
-          <div className={Helpers.mergeCss(Base.col, Base.w8)}>
+          <div className={Helpers.mergeCss(Base.col, Base.w7)}>
             <h2 className={Base.marginBottom2}>
               Search          
             </h2>
@@ -77,31 +137,141 @@ const Search = () => {
               className={Styles.customInput}
               placeholder="Search Movies"/>
           </div>
-          <div className={Helpers.mergeCss(Base.col, Base.w4)}>
+          <div className={Helpers.mergeCss(Base.col, Base.w5)}>
             <h2 className={Base.marginBottom2}>
               Filter          
             </h2>
             <div className={Helpers.mergeCss(Base.row)}>
-              <div className={Helpers.mergeCss(Base.col, Base.w6)}>
-                <Input
-                  value={people}
-                  onChange={(e) => setPeople(e.target.value)}
-                  className={Styles.customInput}
-                  placeholder="Actor/Actress"/>
+              <div className={Helpers.mergeCss(Base.col, Base.w7)}>
+                <div className={Styles.inputPeople}>
+                  <Input
+                    id={'search-input-people'}
+                    value={people}
+                    onChange={handleInput}
+                    className={Styles.customInputPeople(
+                        state.actorFilterOptions.filter(any => any.profile_path !== null)
+                        .filter(any => !newPersons.includes(any.name.toLowerCase())).length > 0
+                      )}
+                    placeholder="Actor/Actress"/>
+                    {
+                      state.actorFilterOptions.filter(any => any.profile_path !== null)
+                      .filter(any => !newPersons.includes(any.name.toLowerCase())).length > 0 && 
+                      (
+                        <div className={Styles.resultPeople}>
+                          {state.actorFilterOptions.filter(any => any.profile_path !== null)
+                            .filter(any => !newPersons.includes(any.name.toLowerCase()))
+                            .map(any => {
+                            return(
+                              <div onClick={addFilter(any.name, 'persons')} key={any.id} className={Styles.actorItem}>
+                                <img src={IMAGE_URL + POTRAIT + any.profile_path}/>
+                                <div>
+                                  <b>{any.name}</b>
+                                  <span>
+                                    {any.known_for_department}
+                                  </span>
+                                </div>
+                              </div>
+                            )
+                          }).slice(0, 5)}
+                        </div>
+                      )
+                    }
+                </div>
               </div>
-              <div className={Helpers.mergeCss(Base.col, Base.w6)}>
-                <Input
-                  type={'number'}
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  className={Styles.customInput}
-                  placeholder="Year"/>
+              <div className={Helpers.mergeCss(Base.col, Base.w5)}>
+                <div className={Styles.inputPeople}>
+                  <Input
+                    id={'search-input-year'}
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    className={Styles.customInputYear(
+                      state.yearFilterOptions.filter(any => any.includes(year)).length > 0 
+                      && (year !== '')
+                    )}
+                    placeholder="Year"/>
+                    {
+                      state.yearFilterOptions.filter(any => any.includes(year)).length > 0 && 
+                      (year !== '') &&
+                      <div className={Styles.resultYear}>
+                        {
+                          state.yearFilterOptions.filter(any => any.includes(year)).map(any => {
+                            return(
+                              <div onClick={addFilter(any, 'years')} key={any} 
+                                className={Styles.actorItem}>
+                                <div>
+                                  <b>{any}</b>
+                                </div>
+                              </div>
+                            )
+                          }).slice(0, 10)
+                        }
+                      </div>
+                    }
+                  </div>
               </div>
             </div>
           </div>
         </div>
         <div className={Helpers.mergeCss(Base.row, Base.marginTop3, Styles.form)}>
           <div className={Helpers.mergeCss(Base.col, Base.w12)}>
+            <div className={Base.row}>
+              <div className={Helpers.mergeCss(Base.col, Base.w12)}>
+                {
+                  state.actorFilter.length > 0 &&
+                  <>
+                  <h5 className={Base.dInlineBlock}>
+                    Filter by actor/actress
+                  </h5>
+                  {
+                    state.actorFilter.map(item => {
+                      return <span key={item} className={Styles.filter}>
+                        {item}
+                        <b onClick={clearFilter(item, 'persons')}>
+                          <i className="la la-times"></i>
+                        </b>
+                      </span>
+                    })
+                  }
+                  </>
+                }
+                {
+                  state.yearFilter.length > 0 &&
+                  <>
+                  <h5 className={Base.dInlineBlock}>
+                    Filter by year
+                  </h5>
+                  {
+                    state.yearFilter.map(item => {
+                      return <span key={item} className={Styles.filter}>
+                        {item}
+                        <b onClick={clearFilter(item, 'years')}>
+                          <i className="la la-times"></i>
+                        </b>
+                      </span>
+                    })
+                  }
+                  </>
+                }
+              </div>
+              {
+                pagination.length > 1 && (
+                <div className={Helpers.mergeCss(Base.col, Base.marginBottom4, Base.w12)}>
+                  <h6 className={Base.dInlineBlock}>
+                    Page
+                  </h6>
+                  {pagination.map(any =>{
+                    const thepage = any + 1
+                    return(
+                      <span onClick={changePageTo(thepage)} key={thepage} className={Styles.pagination(thepage.toString() === state.page)}>
+                        {thepage}
+                      </span>
+                    )
+                  })}
+                </div>
+                ) 
+              }
+              
+            </div>
             {Object.keys(searchResults).length > 0 &&
               <div className={Styles.resultsSearch}>
               {
@@ -116,7 +286,6 @@ const Search = () => {
                       {
                         searchResults[any].filter(item => any !== 'person' ? (item.poster_path !== null) : (item.profile_path !== null)).map(item => {
                           const bgPath = any !== 'person' ? item.poster_path : item.profile_path
-                          const path = any !== 'person' ? LANDSCAPE_IMAGE : POTRAIT
                           const content = (
                             <>
                             <div className={Styles.parentItem(any)}>

@@ -114,7 +114,10 @@ const customInput = (exist) => {
     border-bottom-left-radius: 0px !important;
     border-bottom-right-radius: 0px !important;
   `:
-  ``
+  `
+    border-bottom-left-radius: 6px !important;
+    border-bottom-right-radius: 6px !important;
+  `
   return css`
     ${existStyle}
   `
@@ -181,7 +184,7 @@ const parentItem = (type) => {
     img{
       padding: 2px;
       border-radius: 2px;
-      background: -webkit-linear-gradient(0deg, #8ecea2, #02a9da);
+      background: linear-gradient(#02a9da, #022540);
       ${typeStyle}
     }
     > div{
