@@ -77,7 +77,6 @@ const Search = () => {
     newPersons.filter(any => any === value.toString().toLowerCase()).length > 0 ? newPersons : newPersons.concat(value.toString().toLowerCase()) : 
     newYears.filter(any => any === value.toString().toLowerCase()).length > 0 ? newYears :  newYears.concat(value.toString().toLowerCase())
     const typeDataStr = typeDataArr.map(any => any).join(',') === '' ? null : typeDataArr.map(any => any).join(',')
-    debugger
     const typeAction = type === 'persons' ? {page, persons: typeDataArr, years: newYears} : 
       {page, persons: newPersons, years: typeDataArr}
     const params = type === 'persons' ? {page, persons: typeDataStr, years} : {page, persons, years: typeDataStr}
