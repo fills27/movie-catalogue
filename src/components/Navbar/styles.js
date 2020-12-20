@@ -193,6 +193,19 @@ const parentItem = (type) => {
   `
 }
 
+const searchNavbar = (searchPage) =>{
+  const searchStyle = searchPage ? `
+    display: none !important;
+  `
+  :
+  `
+    display: inline-flex !important;
+  `
+  return css`
+    ${searchStyle}
+  `
+}
+
 export default {
   hamburgerMenu,
   container,
@@ -200,5 +213,6 @@ export default {
   resultsSearch,
   customInput,
   itemResult,
-  parentItem
+  parentItem,
+  searchNavbar
 }

@@ -47,9 +47,6 @@ const Search = () => {
 
     document.getElementById('search-input-people').addEventListener('keyup', handleInput)
 
-    return () => {
-      document.getElementById('search-input-people').removeEventListener('keyup', handleInput)
-    }
   }, [newTerm])
   
   const searchResults = typeof state.searchResults[state.page - 1] !== 'undefined' ? 

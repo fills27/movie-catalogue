@@ -69,8 +69,7 @@ const Navbar = ({darkMode, active}) => {
         </div>
         <div>
           {
-            !location.pathname.includes('search') &&
-            <div style={{position: 'relative'}} className={Helpers.mergeCss(Base.dInlineFlex, Base.alignItemsCenter)}>
+            <div style={{position: 'relative'}} className={Helpers.mergeCss(Base.dInlineFlex, Styles.searchNavbar(location.pathname.includes('search')), Base.alignItemsCenter)}>
               <Input 
                 id={'search-input'}
                 value={value}
